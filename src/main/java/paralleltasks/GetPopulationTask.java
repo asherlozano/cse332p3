@@ -2,6 +2,7 @@ package paralleltasks;
 
 import cse332.exceptions.NotYetImplementedException;
 import cse332.types.CensusGroup;
+import cse332.types.MapCorners;
 
 import java.util.concurrent.RecursiveTask;
 
