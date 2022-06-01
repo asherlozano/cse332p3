@@ -20,16 +20,39 @@ public class GetPopulationTask extends RecursiveTask<Integer> {
     MapCorners grid;
 
     public GetPopulationTask(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n, MapCorners grid) {
-        throw new NotYetImplementedException();
+        this.censusGroups = censusGroups;
+        this.lo = lo;
+        this.hi = hi;
+        this.w = w;
+        this.s = s;
+        this.e = e;
+        this.n = n;
+        this.grid = grid;
     }
 
     // Returns a number for the total population
     @Override
     protected Integer compute() {
-        throw new NotYetImplementedException();
+        if ( hi - lo < SEQUENTIAL_CUTOFF){
+            return sequentialGetPopulation(censusGroups, lo, hi, w,s,e,n);
+        }
+        int mid = lo + (hi - lo) / 2;
+        GetPopulationTask left = new GetPopulationTask(censusGroups, lo, mid, w,s, e, n,grid);
+        GetPopulationTask right = new GetPopulationTask(censusGroups, mid, hi, w,s,e,n,grid);
+        left.fork();
+        return right.compute() + left.join();
     }
 
     private Integer sequentialGetPopulation(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n) {
-        throw new NotYetImplementedException();
+        int pop = 0;
+        int i = lo;
+        while (i < hi){
+            grid = new MapCorners(censusGroups[i]);
+            if (grid.north <= n && grid.south >= s && grid.east <= e && grid.west >= w){
+                pop += censusGroups[i].population;
+            }
+            i++;
+        }
+        return pop;
     }
 }
