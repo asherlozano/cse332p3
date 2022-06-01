@@ -23,7 +23,7 @@ public class ComplexParallel extends QueryResponder {
         this.numColumns = numColumns;
         this.numRows = numRows;
         this.res = POOL.invoke(new CornerFindingTask(censusData, 0, censusData.length));
-        this.totalPopulation += res.getTotalPopulation();
+        this.totalPopulation = res.getTotalPopulation();
         this.corners = res.getMapCorners();
         this.cellH = (this.corners.north - this.corners.south)/numRows;
         this.cellW = (this.corners.east - this.corners.west)/numColumns;

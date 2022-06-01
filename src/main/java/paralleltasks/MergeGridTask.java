@@ -10,7 +10,7 @@ import java.util.concurrent.RecursiveAction;
  */
 
 public class MergeGridTask extends RecursiveAction {
-    final static int SEQUENTIAL_CUTOFF = 10;
+    final static int SEQUENTIAL_CUTOFF = 100;
     int[][] left, right;
     int rowLo, rowHi, colLo, colHi;
 
