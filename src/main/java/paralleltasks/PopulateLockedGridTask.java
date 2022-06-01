@@ -24,11 +24,32 @@ public class PopulateLockedGridTask extends Thread {
 
     public PopulateLockedGridTask(CensusGroup[] censusGroups, int lo, int hi, int numRows, int numColumns, MapCorners corners,
                                   double cellWidth, double cellHeight, int[][] popGrid, Lock[][] lockGrid) {
-        throw new NotYetImplementedException();
+        this.censusGroups = censusGroups;
+        this.lo = lo;
+        this.hi = hi;
+        this.numColumns = numColumns;
+        this.numRows = numRows;
+        this.corners = corners;
+        this.cellHeight = cellHeight;
+        this.cellWidth = cellWidth;
+        this.populationGrid = popGrid;
+        this.lockGrid = lockGrid;
     }
 
     @Override
     public void run() {
-        throw new NotYetImplementedException();
+        for(int i = lo; i < hi; i ++){
+            int x = (int)((censusGroups[lo].latitude-corners.south)/cellHeight)+1;
+            int y = (int)((censusGroups[lo].latitude-corners.west)/ cellWidth)+1;
+            if (x > numRows){
+                x = populationGrid.length-1;
+            }
+            if(y >= numColumns){
+                y = populationGrid[0].length-1;
+            }
+            lockGrid[x][y].lock();
+            populationGrid[x][y] += censusGroups[i].population;
+            lockGrid[x][y].unlock();
+        }
     }
 }
