@@ -9,6 +9,7 @@ import paralleltasks.PopulateLockedGridTask;
 
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ComplexLockBased extends QueryResponder {
     private static final ForkJoinPool POOL = new ForkJoinPool();
@@ -17,9 +18,8 @@ public class ComplexLockBased extends QueryResponder {
     private int numColumns, numRows;
     CornerFindingResult res;
     MapCorners corners;
-    private int[][] grid;
-    private double cellH, cellW;
-    Lock[][] lockGrid;
+    int[][] grid;
+    double cellH, cellW;
 
     public ComplexLockBased(CensusGroup[] censusData, int numColumns, int numRows) {
         this.censusData = censusData;
@@ -31,35 +31,43 @@ public class ComplexLockBased extends QueryResponder {
         this.cellH = (this.corners.north - this.corners.south)/numRows;
         this.cellW = (this.corners.east - this.corners.west)/numColumns;
         this.grid = new int[numRows +1][numColumns +1];
-        PopulateLockedGridTask[] ts = new PopulateLockedGridTask[NUM_THREADS];
-        for(int i = 0; i < NUM_THREADS-1; i++){
-            ts[i] = new PopulateLockedGridTask(censusData, i*(censusData.length/NUM_THREADS),
-                    (i+1)*(censusData.length/NUM_THREADS), numRows, numColumns, corners, cellW, cellH, grid, lockGrid);
+
+        Lock[][] unlock = new Lock[numColumns + 1][numRows + 1];
+        for(int i = 0; i < numColumns + 1; i++){
+            for(int j = 0; j < numRows + 1; j++){
+                unlock[i][j] = new ReentrantLock();
+            }
+        }
+        PopulateLockedGridTask[] tasks = new PopulateLockedGridTask[NUM_THREADS - 1];
+        int size = censusData.length / NUM_THREADS;
+        for(int i = 0; i < NUM_THREADS - 1; i++){
+            tasks[i] = new PopulateLockedGridTask(censusData, size * i, size * (i + 1), numRows, numColumns,
+                    corners, cellW, cellH, grid, unlock);
         }
         // Run NUM_THREAD in current thread
-        ts[NUM_THREADS-1] = new PopulateLockedGridTask(censusData,
+        tasks[NUM_THREADS - 1] = new PopulateLockedGridTask(censusData,
                 (NUM_THREADS-1)*(censusData.length/NUM_THREADS), censusData.length,
-                numRows, numColumns, corners, cellW, cellH, grid, lockGrid);
+                numRows, numColumns, corners, cellW, cellH, grid, unlock);
+        PopulateLockedGridTask threadTask = new PopulateLockedGridTask(censusData, size * (NUM_THREADS - 1), censusData.length,
+                numRows, numColumns, corners, cellW, cellH, grid, unlock);
 
-        for (int i = 0; i < NUM_THREADS-1; i++) {
-            ts[i].run();
+        for (PopulateLockedGridTask t : tasks) {
+            t.start();
         }
+        threadTask.run();
 
-        ts[NUM_THREADS - 1].run();
-
-        for (int i = 0; i < NUM_THREADS-1; i++) {
+        for (PopulateLockedGridTask t : tasks) {
             try {
-                ts[i].join();
+                t.join();
             } catch (InterruptedException exception) {
                 exception.printStackTrace();
-                System.exit(1);
             }
         }
 
         // Step 2
-        for (int i = 1; i <= numRows; i++) {
-            for (int j = 1; j <= numColumns; j++) {
-                grid[i][j] += (grid[i - 1][j] + grid[i][j - 1]) - grid[i - 1][j - 1];
+        for (int i = 1; i <= numColumns; i++) {
+            for (int j = 1; j <= numRows; j++) {
+                grid[i][j] = (grid[i][j] + grid[i - 1][j] + grid[i][j - 1]) - grid[i - 1][j - 1];
             }
         }
 
@@ -67,15 +75,8 @@ public class ComplexLockBased extends QueryResponder {
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        if (west < 1 || west > this.numColumns || south < 1 || south > this.numRows || east < west ||
-                east > this.numColumns || north < south || north > this.numRows) {
-            throw new IllegalArgumentException();
-        }
-        int nE = grid[north][east];
-        int sE = grid[south-1][east];
-        int sW = grid[south-1][west-1];
-        int nW = grid[north][west-1];
-        return (nE-sE-nW)+sW;
+        return grid[east][north] - grid[west - 1][north] - grid[east][south - 1] + grid[west - 1][south - 1];
     }
 }
+
 

@@ -55,3 +55,4 @@ public class ComplexSequential extends QueryResponder {
         return (nE-sE-nW)+sW;
     }
 }
+

@@ -58,3 +58,5 @@ public class CornerFindingTask extends RecursiveTask<CornerFindingResult> {
     }
 }
 
+
+
