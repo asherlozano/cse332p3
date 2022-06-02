@@ -2,6 +2,7 @@ package queryresponders;
 
 import cse332.interfaces.QueryResponder;
 import cse332.types.CensusGroup;
+import cse332.types.CornerFindingResult;
 import cse332.types.MapCorners;
 
 
@@ -26,8 +27,8 @@ public class ComplexSequential extends QueryResponder {
         this.cellHeight = (this.corners.north - this.corners.south) / numRows;
         for(CensusGroup group : censusData){
             int xR = (int)((group.latitude - corners.south) / cellHeight) + 1;
-            int yC = (int)((group.latitude - corners.west) / cellWidth)+1;
-            if(xR >= numColumns){
+            int yC = (int)((group.longitude - corners.west) / cellWidth)+1;
+            if(xR >= numRows){
                 xR = grid.length - 1;
             }
             if(yC >= numColumns){
@@ -45,8 +46,7 @@ public class ComplexSequential extends QueryResponder {
     @Override
     public int getPopulation(int west, int south, int east, int north) {
         if (west < 1 || west > this.numColumns || south < 1 || south > this.numRows || east < west ||
-                east > this.numColumns
-                || north < south || north > this.numRows) {
+                east > this.numColumns || north < south || north > this.numRows) {
             throw new IllegalArgumentException();
         }
         int nE = grid[north][east];
