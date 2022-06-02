@@ -51,15 +51,15 @@ public class PopulateGridTask extends RecursiveTask<int[][]> {
         int[][] grid = new int[numRows +1][numColumns+1];
         int low = lo;
         while(low < hi){
-            int x = (int)((censusGroups[low].latitude-corners.south)/cellHeight)+1;
-            int y = (int)((censusGroups[low].latitude-corners.west)/ cellWidth)+1;
-            if (x > numRows){
-                x = grid.length-1;
+            int xR = (int)((censusGroups[low].latitude-corners.south)/cellHeight)+1;
+            int yC = (int)((censusGroups[low].longitude-corners.west)/ cellWidth)+1;
+            if (xR >= numRows){
+                xR = grid.length-1;
             }
-            if(y >= numColumns){
-                y = grid[0].length-1;
+            if(yC >= numColumns){
+                yC = grid[0].length-1;
             }
-            grid[x][y]+= censusGroups[low].population;
+            grid[xR][yC]+= censusGroups[low].population;
             low++;
         }
         return grid;

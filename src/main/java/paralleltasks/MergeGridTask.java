@@ -10,7 +10,7 @@ import java.util.concurrent.RecursiveAction;
  */
 
 public class MergeGridTask extends RecursiveAction {
-    final static int SEQUENTIAL_CUTOFF = 100;
+    final static int SEQUENTIAL_CUTOFF = 10;
     int[][] left, right;
     int rowLo, rowHi, colLo, colHi;
 
@@ -32,7 +32,7 @@ public class MergeGridTask extends RecursiveAction {
         MergeGridTask leftRow = new  MergeGridTask(left, right, rowLo, mid, colLo, colHi);
         MergeGridTask rightC = new  MergeGridTask(left, right, mid, rowHi, colLo, colHi);
         leftRow.fork();
-        rightC.compute();;
+        rightC.compute();
         leftRow.join();
     }
 

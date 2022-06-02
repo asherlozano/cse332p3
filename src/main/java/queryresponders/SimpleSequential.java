@@ -8,7 +8,6 @@ public class SimpleSequential extends QueryResponder {
     MapCorners corners;
     private int numColumns;
     private int numRows;
-    private int pop;
     private CensusGroup[] censusData;
     public SimpleSequential(CensusGroup[] censusData, int numColumns, int numRows) {
         this.corners = new MapCorners(censusData[0]);
@@ -19,7 +18,6 @@ public class SimpleSequential extends QueryResponder {
         this.numRows = numRows;
         this.censusData = censusData;
         this.numColumns = numColumns;
-        this.pop = 0;
     }
 
     @Override
@@ -28,6 +26,7 @@ public class SimpleSequential extends QueryResponder {
                 east > this.numColumns || north < south || north > this.numRows) {
             throw new IllegalArgumentException();
         }
+        int pop = 0;
         double cellHeight = (this.corners.north - this.corners.south)/ numRows;
         double cellWidth = (this.corners.east - this.corners.west)/ numColumns;
         double nCorn = cellHeight * (north) + this.corners.south;
@@ -37,9 +36,9 @@ public class SimpleSequential extends QueryResponder {
         for (CensusGroup group : censusData){
             MapCorners corners = new MapCorners(group);
             if(corners.north <= nCorn && corners.south >= sCorn && corners.east <= eCorn && corners.west >= wCorn){
-                this.pop += group.population;
+                pop += group.population;
             }
         }
-        return this.pop;
+        return pop;
     }
 }
