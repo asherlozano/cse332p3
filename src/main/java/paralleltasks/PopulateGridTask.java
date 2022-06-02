@@ -22,16 +22,49 @@ public class PopulateGridTask extends RecursiveTask<int[][]> {
     double cellWidth, cellHeight;
 
     public PopulateGridTask(CensusGroup[] censusGroups, int lo, int hi, int numRows, int numColumns, MapCorners corners, double cellWidth, double cellHeight) {
-        throw new NotYetImplementedException();
+        this.censusGroups = censusGroups;
+        this.lo = lo;
+        this.hi = hi;
+        this.numColumns = numColumns;
+        this.numRows = numRows;
+        this.corners = corners;
+        this.cellHeight = cellHeight;
+        this.cellWidth = cellWidth;
     }
 
     @Override
     protected int[][] compute() {
-        throw new NotYetImplementedException();
+        if (hi - lo <= SEQUENTIAL_CUTOFF){
+            return sequentialPopulateGrid(censusGroups, lo, hi, numRows,numColumns, corners, cellWidth, cellHeight);
+        }
+        int mid = lo + (hi - lo) / 2;
+        PopulateGridTask left = new PopulateGridTask(censusGroups, lo, mid, numRows,numColumns, corners, cellWidth, cellHeight);
+        PopulateGridTask right = new PopulateGridTask(censusGroups, mid, hi, numRows, numColumns, corners, cellWidth, cellHeight);
+        left.fork();
+        int[][] rightRes = right.compute();
+        int[][] leftRes = left.join();
+        POOL.invoke(new MergeGridTask(leftRes,rightRes,0, numRows+1, 0, numColumns+1));
+        return leftRes;
     }
 
-    private int[][] sequentialPopulateGrid() {
-        throw new NotYetImplementedException();
+    private int[][] sequentialPopulateGrid(CensusGroup[] censusGroups, int lo, int hi, int numRows, int numColumns, MapCorners corners, double cellWidth, double cellHeight) {
+        int[][] grid = new int[numRows +1][numColumns+1];
+        int low = lo;
+        while(low < hi){
+            int xR = (int)((censusGroups[low].latitude-corners.south)/cellHeight)+1;
+            int yC = (int)((censusGroups[low].longitude-corners.west)/ cellWidth)+1;
+            if (xR >= numRows){
+                xR = grid.length-1;
+            }
+            if(yC >= numColumns){
+                yC = grid[0].length-1;
+            }
+            grid[xR][yC]+= censusGroups[low].population;
+            low++;
+        }
+        return grid;
     }
 }
+
+
 

@@ -24,11 +24,34 @@ public class PopulateLockedGridTask extends Thread {
 
     public PopulateLockedGridTask(CensusGroup[] censusGroups, int lo, int hi, int numRows, int numColumns, MapCorners corners,
                                   double cellWidth, double cellHeight, int[][] popGrid, Lock[][] lockGrid) {
-        throw new NotYetImplementedException();
+        this.censusGroups = censusGroups;
+        this.lo = lo;
+        this.hi = hi;
+        this.numColumns = numColumns;
+        this.numRows = numRows;
+        this.corners = corners;
+        this.cellHeight = cellHeight;
+        this.cellWidth = cellWidth;
+        this.populationGrid = popGrid;
+        this.lockGrid = lockGrid;
     }
 
     @Override
     public void run() {
-        throw new NotYetImplementedException();
+        int longitudeIndex, latitudeIndex;
+        double longitudeIndexDouble, latitudeIndexDouble;
+        for (int i = lo; i < hi; i++) {
+            longitudeIndexDouble = (censusGroups[i].longitude - corners.west) * numColumns / (corners.east - corners.west) + 1;
+            longitudeIndex = (int) longitudeIndexDouble + (Double.compare(longitudeIndexDouble, (int) longitudeIndexDouble + 1) == 0 ? 1 : 0);
+            longitudeIndex = longitudeIndex == numColumns + 1 ? longitudeIndex - 1 : longitudeIndex;
+
+            latitudeIndexDouble = (censusGroups[i].latitude - corners.south) * numRows / (corners.north - corners.south) + 1;
+            latitudeIndex = (int) latitudeIndexDouble + (Double.compare(latitudeIndexDouble, (int) latitudeIndexDouble + 1) == 0 ? 1 : 0);
+            latitudeIndex = latitudeIndex == numRows + 1 ? latitudeIndex - 1 : latitudeIndex;
+            lockGrid[latitudeIndex][longitudeIndex].lock();
+            populationGrid[latitudeIndex][longitudeIndex] += censusGroups[i].population;
+            lockGrid[latitudeIndex][longitudeIndex].unlock();
+        }
     }
 }
+

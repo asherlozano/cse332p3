@@ -3,6 +3,7 @@ package paralleltasks;
 import cse332.exceptions.NotYetImplementedException;
 import cse332.types.CensusGroup;
 import cse332.types.CornerFindingResult;
+import cse332.types.MapCorners;
 
 import java.util.concurrent.RecursiveTask;
 
@@ -20,18 +21,42 @@ public class CornerFindingTask extends RecursiveTask<CornerFindingResult> {
     int lo, hi;
 
     public CornerFindingTask(CensusGroup[] censusGroups, int lo, int hi) {
-        throw new NotYetImplementedException();
+        this.censusGroups = censusGroups;
+        this.lo = lo;
+        this.hi = hi;
     }
 
     // Returns a pair of MapCorners for the grid and Integer for the total population
     // Key = grid, Value = total population
     @Override
     protected CornerFindingResult compute() {
-        throw new NotYetImplementedException();
+        if (hi - lo < SEQUENTIAL_CUTOFF){
+            return sequentialCornerFinding(censusGroups, lo, hi);
+        }
+        int mid = lo + (hi-lo) / 2;
+        CornerFindingTask left = new CornerFindingTask(censusGroups, lo, mid);
+        CornerFindingTask right = new CornerFindingTask(censusGroups, mid, hi);
+        left.fork();
+        CornerFindingResult rRes = right.compute();
+        CornerFindingResult lRes = left.join();
+        MapCorners rMap = rRes.getMapCorners();
+        rMap = rMap.encompass(lRes.getMapCorners());
+        int total = rRes.getTotalPopulation() + lRes.getTotalPopulation();
+        return new CornerFindingResult(rMap, total);
     }
 
     private CornerFindingResult sequentialCornerFinding(CensusGroup[] censusGroups, int lo, int hi) {
-        throw new NotYetImplementedException();
+        MapCorners mapCorners = new MapCorners(censusGroups[lo]);
+        int total = censusGroups[lo].population;
+        int i = lo+1;
+        while(i < hi){
+            mapCorners = mapCorners.encompass(new MapCorners(censusGroups[i]));
+            total += censusGroups[i].population;
+            i++;
+        }
+        return new CornerFindingResult(mapCorners, total);
     }
 }
+
+
 

@@ -1,22 +1,82 @@
 package queryresponders;
 
-import cse332.exceptions.NotYetImplementedException;
 import cse332.interfaces.QueryResponder;
 import cse332.types.CensusGroup;
+import cse332.types.CornerFindingResult;
+import cse332.types.MapCorners;
+import paralleltasks.CornerFindingTask;
+import paralleltasks.PopulateLockedGridTask;
 
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ComplexLockBased extends QueryResponder {
-    private static final ForkJoinPool POOL = new ForkJoinPool(); // only to invoke CornerFindingTask
+    private static final ForkJoinPool POOL = new ForkJoinPool();
     public int NUM_THREADS = 4;
+    private CensusGroup[] censusData;
+    private int numColumns, numRows;
+    CornerFindingResult res;
+    MapCorners corners;
+    int[][] grid;
+    double cellH, cellW;
 
     public ComplexLockBased(CensusGroup[] censusData, int numColumns, int numRows) {
-        throw new NotYetImplementedException();
+        this.censusData = censusData;
+        this.numColumns = numColumns;
+        this.numRows = numRows;
+        this.res = POOL.invoke(new CornerFindingTask(censusData, 0, censusData.length));
+        this.totalPopulation = res.getTotalPopulation();
+        this.corners = res.getMapCorners();
+        this.cellH = (this.corners.north - this.corners.south)/numRows;
+        this.cellW = (this.corners.east - this.corners.west)/numColumns;
+        this.grid = new int[numRows +1][numColumns +1];
+
+        Lock[][] unlock = new Lock[numColumns + 1][numRows + 1];
+        for(int i = 0; i < numColumns + 1; i++){
+            for(int j = 0; j < numRows + 1; j++){
+                unlock[i][j] = new ReentrantLock();
+            }
+        }
+        PopulateLockedGridTask[] tasks = new PopulateLockedGridTask[NUM_THREADS - 1];
+        int size = censusData.length / NUM_THREADS;
+        for(int i = 0; i < NUM_THREADS - 1; i++){
+            tasks[i] = new PopulateLockedGridTask(censusData, size * i, size * (i + 1), numRows, numColumns,
+                    corners, cellW, cellH, grid, unlock);
+        }
+        // Run NUM_THREAD in current thread
+        tasks[NUM_THREADS - 1] = new PopulateLockedGridTask(censusData,
+                (NUM_THREADS-1)*(censusData.length/NUM_THREADS), censusData.length,
+                numRows, numColumns, corners, cellW, cellH, grid, unlock);
+        PopulateLockedGridTask threadTask = new PopulateLockedGridTask(censusData, size * (NUM_THREADS - 1), censusData.length,
+                numRows, numColumns, corners, cellW, cellH, grid, unlock);
+
+        for (PopulateLockedGridTask t : tasks) {
+            t.start();
+        }
+        threadTask.run();
+
+        for (PopulateLockedGridTask t : tasks) {
+            try {
+                t.join();
+            } catch (InterruptedException exception) {
+                exception.printStackTrace();
+            }
+        }
+
+        // Step 2
+        for (int i = 1; i <= numColumns; i++) {
+            for (int j = 1; j <= numRows; j++) {
+                grid[i][j] = (grid[i][j] + grid[i - 1][j] + grid[i][j - 1]) - grid[i - 1][j - 1];
+            }
+        }
+
     }
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        throw new NotYetImplementedException();
+        return grid[east][north] - grid[west - 1][north] - grid[east][south - 1] + grid[west - 1][south - 1];
     }
-
 }
+
+
