@@ -27,8 +27,10 @@ public class SimpleParallel extends QueryResponder {
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        assert west >= 1 && west <= this.numColumns && south <= this.numRows && east <= this.numColumns
-                && north >= south && north <= this.numRows;
+        if (west < 1 || west > this.numColumns || south < 1 || south > this.numRows || east < west ||
+                east > this.numColumns || north < south || north > this.numRows) {
+            throw new IllegalArgumentException();
+        }
         MapCorners corners = res.getMapCorners();
         double cellWidth = (corners.east - corners.west) / numColumns;
         double cellHeight = (corners.north - corners.south) / numRows;

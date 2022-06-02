@@ -16,8 +16,8 @@ public class ComplexParallel extends QueryResponder {
     private int numColumns, numRows;
     CornerFindingResult res;
     MapCorners corners;
-    int[][] grid;
-    double cellH, cellW;
+    private int[][] grid;
+    private double cellH, cellW;
     public ComplexParallel(CensusGroup[] censusData, int numColumns, int numRows) {
         this.censusData = censusData;
         this.numColumns = numColumns;

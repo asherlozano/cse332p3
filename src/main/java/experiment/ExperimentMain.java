@@ -2,8 +2,8 @@ package experiment;
 
 import cse332.types.CensusGroup;
 import main.PopulationQuery;
-import queryresponders.ComplexSequential;
 import queryresponders.SimpleSequential;
+//import queryresponders.ComplexSequential;
 
 public class ExperimentMain {
     private static CensusGroup[] data;
@@ -12,7 +12,7 @@ public class ExperimentMain {
     final static int NUM_QUERIES = 1000;
     public static void main(String[] args) {
         data = PopulationQuery.parse("CenPop2010.txt");
-        ComplexSequential complexGrid = new ComplexSequential(data, 500, 100);
+//        ComplexSequential complexGrid = new ComplexSequential(data, 500, 100);
         SimpleSequential sequentialGrid = new SimpleSequential(data, 500, 100);
         double sequentialTotalTime = 0;
         for (int i = 0; i < NUM_TRIALS; i++) {
@@ -32,7 +32,7 @@ public class ExperimentMain {
         for (int i = 0; i < NUM_TRIALS; i++) {
             long start = System.nanoTime();
             for (int j = 0; j < NUM_QUERIES; j++) {
-                complexGrid.getPopulation(51, 1, 500, 100);
+//                complexGrid.getPopulation(51, 1, 500, 100);
 
             }
             long end = System.nanoTime();

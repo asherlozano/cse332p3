@@ -14,12 +14,12 @@ import java.util.concurrent.RecursiveTask;
  */
 
 public class PopulateGridTask extends RecursiveTask<int[][]> {
-    final static int SEQUENTIAL_CUTOFF = 10000;
+    public final static int SEQUENTIAL_CUTOFF = 10000;
     private static final ForkJoinPool POOL = new ForkJoinPool();
     CensusGroup[] censusGroups;
-    int lo, hi, numRows, numColumns;
+    private int lo, hi, numRows, numColumns;
     MapCorners corners;
-    double cellWidth, cellHeight;
+    private double cellWidth, cellHeight;
 
     public PopulateGridTask(CensusGroup[] censusGroups, int lo, int hi, int numRows, int numColumns, MapCorners corners, double cellWidth, double cellHeight) {
         this.censusGroups = censusGroups;
