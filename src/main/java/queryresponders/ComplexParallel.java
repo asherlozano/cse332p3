@@ -30,14 +30,19 @@ public class ComplexParallel extends QueryResponder {
         this.grid = POOL.invoke(new PopulateGridTask(censusData,0,censusData.length,numRows,numColumns,corners,cellW,cellH ));
         for (int i = 1; i <= numRows; i++) {
             for (int j = 1; j <= numColumns; j++) {
-                grid[i][j] = (grid[i][j] + grid[i][j - 1] + grid[i - 1][j]) - grid[i - 1][j - 1];
+                grid[i][j] += (grid[i - 1][j] + grid[i][j - 1]) - grid[i - 1][j - 1];
             }
         }
     }
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        return grid[east][north] - grid[west - 1][north] - grid[east][south - 1] + grid[west - 1][south - 1];
+        assert west >= 1 && west <= this.numColumns && south <= this.numRows && east <= this.numColumns
+                && north >= south && north <= this.numRows;
+        int nE = grid[north][east];
+        int sE = grid[south-1][east];
+        int sW = grid[south-1][west-1];
+        int nW = grid[north][west-1];
+        return (nE-sE-nW)+sW;
     }
 }
-
