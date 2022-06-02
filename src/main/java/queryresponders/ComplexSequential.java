@@ -45,15 +45,7 @@ public class ComplexSequential extends QueryResponder {
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        if (west < 1 || west > this.numColumns || south < 1 || south > this.numRows || east < west ||
-                east > this.numColumns || north < south || north > this.numRows) {
-            throw new IllegalArgumentException();
-        }
-        int nE = grid[north][east];
-        int sE = grid[south-1][east];
-        int sW = grid[south-1][west-1];
-        int nW = grid[north][west-1];
-        return (nE-sE-nW)+sW;
+        return grid[east][north] - grid[west - 1][north] - grid[east][south - 1] + grid[west - 1][south - 1];
     }
 }
 

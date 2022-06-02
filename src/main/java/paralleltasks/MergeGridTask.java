@@ -25,21 +25,29 @@ public class MergeGridTask extends RecursiveAction {
 
     @Override
     protected void compute() {
-        if((rowHi - rowLo) <= SEQUENTIAL_CUTOFF || (colHi - colLo) <= SEQUENTIAL_CUTOFF){
-            sequentialMergeGird(left, right, rowLo, rowHi, colLo, colHi);
+        if((rowHi - rowLo) * (colHi - colLo) <= SEQUENTIAL_CUTOFF){
+            this.sequentialMergeGird();
+            return;
         }
-        int mid = rowLo +(rowHi - rowLo) / 2;
-        MergeGridTask leftRow = new  MergeGridTask(left, right, rowLo, mid, colLo, colHi);
-        MergeGridTask rightC = new  MergeGridTask(left, right, mid, rowHi, colLo, colHi);
+        int rowMid = (rowHi - rowLo) / 2 + rowLo;
+        int colMid = (colHi - rowLo) / 2 + rowLo;
+        MergeGridTask leftRow = new MergeGridTask(left, right, rowLo, rowMid, colLo, colHi);
+        MergeGridTask rightRow = new MergeGridTask(left, right, rowLo, rowMid, colMid, colHi);
+        MergeGridTask leftCol = new MergeGridTask(left, right, rowMid, rowHi, colLo, colMid);
+        MergeGridTask rightCol = new MergeGridTask(left, right, rowMid, rowHi, colMid, colHi);
         leftRow.fork();
-        rightC.compute();
+        rightRow.fork();
+        leftCol.fork();
+        rightCol.compute();
         leftRow.join();
+        rightRow.join();
+        leftCol.join();
     }
 
     // according to google gird means "prepare oneself for something difficult or challenging" so this typo is intentional :)
-    private void sequentialMergeGird(int[][] left, int[][] right, int rowLo, int rowHi, int colLo, int colHi) {
-        for(int i = rowLo; i < rowHi; i++){
-            for (int j = colLo; j < colHi; j++){
+    private void sequentialMergeGird() {
+        for(int i = colLo; i < colHi; i++){
+            for (int j = rowLo; j < rowHi; j++){
                 left[i][j] += right[i][j];
             }
         }
