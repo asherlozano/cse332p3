@@ -38,18 +38,19 @@ public class PopulateLockedGridTask extends Thread {
 
     @Override
     public void run() {
-        for(int i = lo; i < hi; i ++){
-            int x = (int)((censusGroups[lo].latitude-corners.south)/cellHeight)+1;
-            int y = (int)((censusGroups[lo].latitude-corners.west)/ cellWidth)+1;
-            if (x > numRows){
-                x = populationGrid.length-1;
-            }
-            if(y >= numColumns){
-                y = populationGrid[0].length-1;
-            }
-            lockGrid[x][y].lock();
-            populationGrid[x][y] += censusGroups[i].population;
-            lockGrid[x][y].unlock();
+        int longitudeIndex, latitudeIndex;
+        double longitudeIndexDouble, latitudeIndexDouble;
+        for (int i = lo; i < hi; i++) {
+            longitudeIndexDouble = (censusGroups[i].longitude - corners.west) * numColumns / (corners.east - corners.west) + 1;
+            longitudeIndex = (int) longitudeIndexDouble + (Double.compare(longitudeIndexDouble, (int) longitudeIndexDouble + 1) == 0 ? 1 : 0);
+            longitudeIndex = longitudeIndex == numColumns + 1 ? longitudeIndex - 1 : longitudeIndex;
+
+            latitudeIndexDouble = (censusGroups[i].latitude - corners.south) * numRows / (corners.north - corners.south) + 1;
+            latitudeIndex = (int) latitudeIndexDouble + (Double.compare(latitudeIndexDouble, (int) latitudeIndexDouble + 1) == 0 ? 1 : 0);
+            latitudeIndex = latitudeIndex == numRows + 1 ? latitudeIndex - 1 : latitudeIndex;
+            lockGrid[latitudeIndex][longitudeIndex].lock();
+            populationGrid[latitudeIndex][longitudeIndex] += censusGroups[i].population;
+            lockGrid[latitudeIndex][longitudeIndex].unlock();
         }
     }
 }

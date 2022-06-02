@@ -11,7 +11,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.locks.Lock;
 
 public class ComplexLockBased extends QueryResponder {
-    private static final ForkJoinPool POOL = new ForkJoinPool(); // only to invoke CornerFindingTask
+    private static final ForkJoinPool POOL = new ForkJoinPool();
     public int NUM_THREADS = 4;
     private CensusGroup[] censusData;
     private int numColumns, numRows;
