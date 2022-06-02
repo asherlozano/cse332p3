@@ -13,10 +13,10 @@ import java.util.concurrent.RecursiveTask;
    4) The compute method returns an Integer representing the total population contained in the query rectangle
  */
 public class GetPopulationTask extends RecursiveTask<Integer> {
-    final static int SEQUENTIAL_CUTOFF = 1000;
+    public final static int SEQUENTIAL_CUTOFF = 1000;
     CensusGroup[] censusGroups;
-    int lo, hi;
-    double w, s, e, n;
+    private int lo, hi;
+    private double w, s, e, n;
     MapCorners grid;
 
     public GetPopulationTask(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n, MapCorners grid) {
@@ -45,13 +45,11 @@ public class GetPopulationTask extends RecursiveTask<Integer> {
 
     private Integer sequentialGetPopulation(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n) {
         int pop = 0;
-        int i = lo;
-        while (i < hi){
+        for(int i = 0; i < hi; i++){
             grid = new MapCorners(censusGroups[i]);
             if (grid.north <= n && grid.south >= s && grid.east <= e && grid.west >= w){
                 pop += censusGroups[i].population;
             }
-            i++;
         }
         return pop;
     }

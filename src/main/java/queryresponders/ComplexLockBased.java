@@ -17,8 +17,8 @@ public class ComplexLockBased extends QueryResponder {
     private int numColumns, numRows;
     CornerFindingResult res;
     MapCorners corners;
-    int[][] grid;
-    double cellH, cellW;
+    private int[][] grid;
+    private double cellH, cellW;
     Lock[][] lockGrid;
 
     public ComplexLockBased(CensusGroup[] censusData, int numColumns, int numRows) {
@@ -67,8 +67,10 @@ public class ComplexLockBased extends QueryResponder {
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        assert west >= 1 && west <= this.numColumns && south <= this.numRows && east <= this.numColumns
-                && north >= south && north <= this.numRows;
+        if (west < 1 || west > this.numColumns || south < 1 || south > this.numRows || east < west ||
+                east > this.numColumns || north < south || north > this.numRows) {
+            throw new IllegalArgumentException();
+        }
         int nE = grid[north][east];
         int sE = grid[south-1][east];
         int sW = grid[south-1][west-1];

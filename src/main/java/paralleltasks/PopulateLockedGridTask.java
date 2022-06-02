@@ -15,10 +15,10 @@ import java.util.concurrent.locks.Lock;
 
 public class PopulateLockedGridTask extends Thread {
     CensusGroup[] censusGroups;
-    int lo, hi, numRows, numColumns;
+    private int lo, hi, numRows, numColumns;
     MapCorners corners;
-    double cellWidth, cellHeight;
-    int[][] populationGrid;
+    private double cellWidth, cellHeight;
+    private int[][] populationGrid;
     Lock[][] lockGrid;
 
 

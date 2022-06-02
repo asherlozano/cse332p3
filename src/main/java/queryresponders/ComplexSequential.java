@@ -2,16 +2,15 @@ package queryresponders;
 
 import cse332.interfaces.QueryResponder;
 import cse332.types.CensusGroup;
-import cse332.types.CornerFindingResult;
 import cse332.types.MapCorners;
 
 
 public class ComplexSequential extends QueryResponder {
-    CensusGroup[] censusData;
-    int[][] grid;
-    int numColumns, numRows;
-    double cellHeight, cellWidth;
-    MapCorners corners;
+    private CensusGroup[] censusData;
+    private int[][] grid;
+    private int numColumns, numRows;
+    private double cellHeight, cellWidth;
+    private MapCorners corners;
 
     public ComplexSequential(CensusGroup[] censusData, int numColumns, int numRows) {
         this.censusData = censusData;
