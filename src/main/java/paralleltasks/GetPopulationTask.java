@@ -46,7 +46,7 @@ public class GetPopulationTask extends RecursiveTask<Integer> {
         return right.compute() + left.join();
     }
 
-    private Integer sequentialGetPopulation(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n) {
+    private Integer sequentialGetPopulation() {
         int pop = 0;
         for(int i = lo; i < hi; i++){
             int row = getRow(censusGroups[i]);

@@ -20,7 +20,7 @@ public class PopulateLockedGridTask extends Thread {
     int[][] populationGrid;
     Lock[][] lockGrid;
 
-0
+
     public PopulateLockedGridTask(CensusGroup[] censusGroups, int lo, int hi, int numRows, int numColumns, MapCorners corners, int[][] populationGrid, Lock[][] lockGrid) {
         this.censusGroups = censusGroups;
         this.lo = lo;
