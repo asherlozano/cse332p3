@@ -19,7 +19,7 @@ public class ComplexSequential extends QueryResponder {
         for(CensusGroup group : censusData){
             int xR = getRow(group, corners, numRows);
             int yC = getCol(group, corners, numColumns);
-            grid[xR][yC] += group.population;
+            grid[yC][xR] += group.population;
         }
         for(int i =1; i <= numColumns; i++){
             for(int j = 1; j <= numRows; j++){
@@ -47,4 +47,6 @@ public class ComplexSequential extends QueryResponder {
         return col;
     }
 }
+
+
 
