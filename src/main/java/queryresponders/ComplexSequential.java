@@ -5,46 +5,46 @@ import cse332.types.CensusGroup;
 import cse332.types.MapCorners;
 
 
+
 public class ComplexSequential extends QueryResponder {
-    private CensusGroup[] censusData;
-    private int[][] grid;
-    private int numColumns, numRows;
-    private double cellHeight, cellWidth;
-    private MapCorners corners;
+    int[][] grid;
 
     public ComplexSequential(CensusGroup[] censusData, int numColumns, int numRows) {
-        this.censusData = censusData;
-        this.numColumns = numColumns;
-        this.numRows = numRows;
-        this.grid = new int[numRows+1][numColumns+1];
-        this.corners = new MapCorners(censusData[0]);
+        grid = new int[numColumns+1][numRows+1];
+        MapCorners corners = new MapCorners(censusData[0]);
         for (CensusGroup group : censusData){
-            this.corners = corners.encompass(new MapCorners(group));
-            this.totalPopulation += group.population;
+            totalPopulation += group.population;
+            corners = corners.encompass(new MapCorners(group));
         }
-        this.cellWidth = (this.corners.east - this.corners.west) / numColumns;
-        this.cellHeight = (this.corners.north - this.corners.south) / numRows;
         for(CensusGroup group : censusData){
-            int xR = (int)((group.latitude - corners.south) / cellHeight) + 1;
-            int yC = (int)((group.longitude - corners.west) / cellWidth)+1;
-            if(xR >= numRows){
-                xR = grid.length - 1;
-            }
-            if(yC >= numColumns){
-                yC = grid[0].length-1;
-            }
-            grid[xR][yC]+= group.population;
+            int xR = getRow(group, corners, numRows);
+            int yC = getCol(group, corners, numColumns);
+            grid[xR][yC] += group.population;
         }
-        for(int i =1; i <= numRows; i++){
-            for(int j = 1; j <= numColumns; j++){
-                grid[i][j] += grid[i-1][j] + grid[i][j-1]-grid[i-1][j-1];
+        for(int i =1; i <= numColumns; i++){
+            for(int j = 1; j <= numRows; j++){
+                grid[i][j] += grid[i-1][j] + grid[i][j-1]+grid[i-1][j] - grid[i-1][j-1];
             }
         }
     }
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        return grid[east][north] - grid[west - 1][north] - grid[east][south - 1] + grid[west - 1][south - 1];
+        return grid[east][north]-grid[west-1][north]-grid[east][south-1]+grid[west-1][south-1];
+    }
+    private int getRow(CensusGroup group, MapCorners corners, int rows){
+        int row = (int)(rows*((group.latitude-corners.south) / (corners.north- corners.south)))+1;
+        if(row > rows){
+            row = rows;
+        }
+        return row;
+    }
+    private int getCol(CensusGroup group, MapCorners corners, int cols){
+        int col = (int)(cols * ((group.longitude - corners.west) / (corners.east-corners.west)))+1;
+        if(col > cols){
+            col = cols;
+        }
+        return col;
     }
 }
 

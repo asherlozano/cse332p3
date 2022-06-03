@@ -10,35 +10,41 @@ public class SimpleSequential extends QueryResponder {
     private int numRows;
     private CensusGroup[] censusData;
     public SimpleSequential(CensusGroup[] censusData, int numColumns, int numRows) {
-        this.corners = new MapCorners(censusData[0]);
-        for (CensusGroup group : censusData){
-            this.corners = corners.encompass(new MapCorners(group));
-            this.totalPopulation += group.population;
-        }
         this.numRows = numRows;
         this.censusData = censusData;
         this.numColumns = numColumns;
+        MapCorners start = new MapCorners(censusData[0]);
+        for (CensusGroup group : censusData){
+            totalPopulation += group.population;
+            start = start.encompass(new MapCorners(group));
+        }
+        corners = start;
     }
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        if (west < 1 || west > this.numColumns || south < 1 || south > this.numRows || east < west ||
-                east > this.numColumns || north < south || north > this.numRows) {
-            throw new IllegalArgumentException();
-        }
         int pop = 0;
-        double cellHeight = (this.corners.north - this.corners.south)/ numRows;
-        double cellWidth = (this.corners.east - this.corners.west)/ numColumns;
-        double nCorn = cellHeight * (north) + this.corners.south;
-        double sCorn = cellHeight * (south - 1) + this.corners.south;
-        double wCorn = cellWidth * (west-1) + this.corners.west;
-        double eCorn = cellWidth * (east) + this.corners.west;
         for (CensusGroup group : censusData){
-            MapCorners corners = new MapCorners(group);
-            if(corners.north <= nCorn && corners.south >= sCorn && corners.east <= eCorn && corners.west >= wCorn){
+            int r = getRow(group);
+            int c = getCol(group);
+            if(c>=west&&c<=east&&r>=south&&r<=north){
                 pop += group.population;
             }
         }
         return pop;
+    }
+    private int getRow(CensusGroup group){
+        int row = (int)(numRows*((group.latitude-corners.south) / (corners.north- corners.south)))+1;
+        if(row > numRows){
+            row = numRows;
+        }
+        return row;
+    }
+    private int getCol(CensusGroup group){
+        int col = (int)(numColumns * ((group.longitude - corners.west) / (corners.east-corners.west)))+1;
+        if(col > numColumns){
+            col = numColumns;
+        }
+        return col;
     }
 }
