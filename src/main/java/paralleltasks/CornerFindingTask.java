@@ -16,9 +16,9 @@ import java.util.concurrent.RecursiveTask;
  */
 
 public class CornerFindingTask extends RecursiveTask<CornerFindingResult> {
-    public final int SEQUENTIAL_CUTOFF = 10000;
+    final int SEQUENTIAL_CUTOFF = 10000;
     CensusGroup[] censusGroups;
-    private int lo, hi;
+    int lo, hi;
 
     public CornerFindingTask(CensusGroup[] censusGroups, int lo, int hi) {
         this.censusGroups = censusGroups;
@@ -57,6 +57,4 @@ public class CornerFindingTask extends RecursiveTask<CornerFindingResult> {
         return new CornerFindingResult(mapCorners, total);
     }
 }
-
-
 

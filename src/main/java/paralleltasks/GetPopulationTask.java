@@ -13,10 +13,10 @@ import java.util.concurrent.RecursiveTask;
    4) The compute method returns an Integer representing the total population contained in the query rectangle
  */
 public class GetPopulationTask extends RecursiveTask<Integer> {
-    public final static int SEQUENTIAL_CUTOFF = 1000;
+    final static int SEQUENTIAL_CUTOFF = 1000;
     CensusGroup[] censusGroups;
-    private int lo, hi;
-    private double w, s, e, n;
+    int lo, hi;
+    double w, s, e, n;
     MapCorners grid;
 
     public GetPopulationTask(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n, MapCorners grid) {
@@ -33,25 +33,26 @@ public class GetPopulationTask extends RecursiveTask<Integer> {
     // Returns a number for the total population
     @Override
     protected Integer compute() {
-        if ( hi - lo < SEQUENTIAL_CUTOFF){
-            return sequentialGetPopulation(censusGroups, lo, hi, w,s,e,n);
+        if (hi - lo < SEQUENTIAL_CUTOFF) {
+            return sequentialGetPopulation(censusGroups, lo, hi, w, s, e, n);
         }
         int mid = lo + (hi - lo) / 2;
-        GetPopulationTask left = new GetPopulationTask(censusGroups, lo, mid, w,s, e, n,grid);
-        GetPopulationTask right = new GetPopulationTask(censusGroups, mid, hi, w,s,e,n,grid);
+        GetPopulationTask left = new GetPopulationTask(censusGroups, lo, mid, w, s, e, n, grid);
+        GetPopulationTask right = new GetPopulationTask(censusGroups, mid, hi, w, s, e, n, grid);
         left.fork();
         return right.compute() + left.join();
     }
 
     private Integer sequentialGetPopulation(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n) {
         int pop = 0;
-        for(int i = 0; i < hi; i++){
+        int i = lo;
+        while (i < hi) {
             grid = new MapCorners(censusGroups[i]);
-            if (grid.north <= n && grid.south >= s && grid.east <= e && grid.west >= w){
+            if (grid.north <= n && grid.south >= s && grid.east <= e && grid.west >= w) {
                 pop += censusGroups[i].population;
             }
+            i++;
         }
         return pop;
     }
 }
-
