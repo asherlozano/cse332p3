@@ -37,6 +37,7 @@ public class PopulateGridTask extends RecursiveTask<int[][]> {
         int mid = (hi - lo)/ 2 + lo;
         PopulateGridTask task1 = new PopulateGridTask(censusGroups, lo, mid, numRows, numColumns, corners);
         PopulateGridTask task2= new PopulateGridTask(censusGroups, mid, hi, numRows, numColumns, corners);
+        task1.fork();
         int[][] hiRes = task2.compute();
         int[][] loRes = task1.join();
         POOL.invoke(new MergeGridTask(loRes, hiRes, 0, loRes[0].length, 0, loRes.length));
@@ -68,6 +69,11 @@ public class PopulateGridTask extends RecursiveTask<int[][]> {
         return col;
     }
 }
+
+
+
+
+
 
 
 
