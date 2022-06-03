@@ -12,22 +12,22 @@ import java.util.concurrent.ForkJoinPool;
 public class SimpleParallel extends QueryResponder {
     private static final ForkJoinPool POOL = new ForkJoinPool();
     private CensusGroup[] censusData;
-    private int numColumns;
-    private int numRows;
+    private int columns;
+    private int rows;
     private MapCorners corners;
 
     public SimpleParallel(CensusGroup[] censusData, int numColumns, int numRows) {
         this.censusData = censusData;
-        numColumns = numColumns;
-        numRows = numRows;
+        columns = numColumns;
+        rows = numRows;
         CornerFindingResult res = POOL.invoke(new CornerFindingTask(censusData, 0, censusData.length));
         corners = res.getMapCorners();
-        this.totalPopulation += res.getTotalPopulation();
+        this.totalPopulation = res.getTotalPopulation();
     }
 
     @Override
     public int getPopulation(int west, int south, int east, int north) {
-        return POOL.invoke(new GetPopulationTask(censusData, 0, censusData.length, west, south, east, north, corners,numRows, numColumns));
+        return POOL.invoke(new GetPopulationTask(censusData, 0, censusData.length, west, south, east, north, corners,rows, columns));
     }
 }
 
