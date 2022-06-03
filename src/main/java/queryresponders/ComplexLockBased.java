@@ -30,7 +30,7 @@ public class ComplexLockBased extends QueryResponder {
         int size = censusData.length / NUM_THREADS;
         for(int i = 0; i < (NUM_THREADS - 1); i++){
             tasks[i] = new PopulateLockedGridTask(censusData, size * i, size * (i + 1), numRows, numColumns,
-                    corners, cellW, cellH, grid, unlock);
+                    res.getMapCorners(), grid, unlock);
         }
         PopulateLockedGridTask threadTask = new PopulateLockedGridTask(censusData, size * (NUM_THREADS - 1), censusData.length,
                 numRows, numColumns, res.getMapCorners(), grid, unlock);
