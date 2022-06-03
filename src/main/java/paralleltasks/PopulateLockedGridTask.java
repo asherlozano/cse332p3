@@ -15,43 +15,48 @@ import java.util.concurrent.locks.Lock;
 
 public class PopulateLockedGridTask extends Thread {
     CensusGroup[] censusGroups;
-    private int lo, hi, numRows, numColumns;
+    int lo, hi, numRows, numColumns;
     MapCorners corners;
-    private double cellWidth, cellHeight;
-    private int[][] populationGrid;
+    int[][] populationGrid;
     Lock[][] lockGrid;
 
-
-    public PopulateLockedGridTask(CensusGroup[] censusGroups, int lo, int hi, int numRows, int numColumns, MapCorners corners,
-                                  double cellWidth, double cellHeight, int[][] popGrid, Lock[][] lockGrid) {
+0
+    public PopulateLockedGridTask(CensusGroup[] censusGroups, int lo, int hi, int numRows, int numColumns, MapCorners corners, int[][] populationGrid, Lock[][] lockGrid) {
         this.censusGroups = censusGroups;
         this.lo = lo;
         this.hi = hi;
         this.numColumns = numColumns;
         this.numRows = numRows;
         this.corners = corners;
-        this.cellHeight = cellHeight;
-        this.cellWidth = cellWidth;
-        this.populationGrid = popGrid;
+        this.populationGrid = populationGrid;
         this.lockGrid = lockGrid;
     }
 
     @Override
     public void run() {
-        int longitudeIndex, latitudeIndex;
-        double longitudeIndexDouble, latitudeIndexDouble;
-        for (int i = lo; i < hi; i++) {
-            longitudeIndexDouble = (censusGroups[i].longitude - corners.west) * numColumns / (corners.east - corners.west) + 1;
-            longitudeIndex = (int) longitudeIndexDouble + (Double.compare(longitudeIndexDouble, (int) longitudeIndexDouble + 1) == 0 ? 1 : 0);
-            longitudeIndex = longitudeIndex == numColumns + 1 ? longitudeIndex - 1 : longitudeIndex;
-
-            latitudeIndexDouble = (censusGroups[i].latitude - corners.south) * numRows / (corners.north - corners.south) + 1;
-            latitudeIndex = (int) latitudeIndexDouble + (Double.compare(latitudeIndexDouble, (int) latitudeIndexDouble + 1) == 0 ? 1 : 0);
-            latitudeIndex = latitudeIndex == numRows + 1 ? latitudeIndex - 1 : latitudeIndex;
-            lockGrid[latitudeIndex][longitudeIndex].lock();
-            populationGrid[latitudeIndex][longitudeIndex] += censusGroups[i].population;
-            lockGrid[latitudeIndex][longitudeIndex].unlock();
+        for(int i = lo; i < hi; i ++){
+            int row = getRow(censusGroups[i], corners, numRows);
+            int col = getColumn(censusGroups[i], corners, numColumns);
+            lockGrid[col][row].lock();
+            populationGrid[col][row] += censusGroups[i].population;
+            lockGrid[col][row].unlock();
         }
     }
+
+    private int getRow(CensusGroup group, MapCorners corners, int rows){
+        int row = (int) (rows * ((group.latitude - corners.south)/ (corners.north - corners.south))) + 1;
+        if (row > rows)
+            row = rows;
+        return row;
+    }
+
+    private int getColumn(CensusGroup group, MapCorners corners, int columns){
+        int col = (int) (columns * ((group.longitude - corners.west)/ (corners.east - corners.west))) + 1;
+        if (col > columns)
+            col = columns;
+        return col;
+    }
 }
+
+
 

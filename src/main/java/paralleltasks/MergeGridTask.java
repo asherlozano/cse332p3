@@ -10,9 +10,9 @@ import java.util.concurrent.RecursiveAction;
  */
 
 public class MergeGridTask extends RecursiveAction {
-    public final static int SEQUENTIAL_CUTOFF = 10;
-    private int[][] left, right;
-    private int rowLo, rowHi, colLo, colHi;
+    final static int SEQUENTIAL_CUTOFF = 10;
+    int[][] left, right;
+    int rowLo, rowHi, colLo, colHi;
 
     public MergeGridTask(int[][] left, int[][] right, int rowLo, int rowHi, int colLo, int colHi) {
         this.left = left;
@@ -25,29 +25,29 @@ public class MergeGridTask extends RecursiveAction {
 
     @Override
     protected void compute() {
-        if((rowHi - rowLo) * (colHi - colLo) <= SEQUENTIAL_CUTOFF){
+        if((colHi - colLo) * (rowHi - rowLo) <= SEQUENTIAL_CUTOFF){
             this.sequentialMergeGird();
             return;
         }
-        int rowMid = (rowHi - rowLo) / 2 + rowLo;
-        int colMid = (colHi - rowLo) / 2 + rowLo;
-        MergeGridTask leftRow = new MergeGridTask(left, right, rowLo, rowMid, colLo, colHi);
-        MergeGridTask rightRow = new MergeGridTask(left, right, rowLo, rowMid, colMid, colHi);
-        MergeGridTask leftCol = new MergeGridTask(left, right, rowMid, rowHi, colLo, colMid);
-        MergeGridTask rightCol = new MergeGridTask(left, right, rowMid, rowHi, colMid, colHi);
-        leftRow.fork();
-        rightRow.fork();
-        leftCol.fork();
-        rightCol.compute();
-        leftRow.join();
-        rightRow.join();
-        leftCol.join();
+        int colMid = (colHi - colLo) /2 + colLo;
+        int rowMid = (rowHi - rowLo) /2 + rowLo;
+        MergeGridTask task00 = new MergeGridTask(left, right, rowLo, rowMid, colLo, colMid);
+        MergeGridTask task01 = new MergeGridTask(left, right, rowLo, rowMid, colMid, colHi);
+        MergeGridTask task10 = new MergeGridTask(left, right, rowMid, rowHi, colLo, colMid);
+        MergeGridTask task11 = new MergeGridTask(left, right, rowMid, rowHi, colMid, colHi);
+        task00.fork();
+        task01.fork();
+        task10.fork();
+        task11.compute();
+        task00.join();
+        task01.join();
+        task10.join();
     }
 
     // according to google gird means "prepare oneself for something difficult or challenging" so this typo is intentional :)
     private void sequentialMergeGird() {
-        for(int i = colLo; i < colHi; i++){
-            for (int j = rowLo; j < rowHi; j++){
+        for (int i = colLo; i < colHi; i++){
+            for(int j = rowLo; j < rowHi; j++){
                 left[i][j] += right[i][j];
             }
         }

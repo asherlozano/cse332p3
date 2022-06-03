@@ -13,13 +13,14 @@ import java.util.concurrent.RecursiveTask;
    4) The compute method returns an Integer representing the total population contained in the query rectangle
  */
 public class GetPopulationTask extends RecursiveTask<Integer> {
-    public final static int SEQUENTIAL_CUTOFF = 1000;
+    final static int SEQUENTIAL_CUTOFF = 1000;
     CensusGroup[] censusGroups;
-    private int lo, hi;
-    private double w, s, e, n;
+    int lo, hi;
+    int w, s, e, n;
     MapCorners grid;
+    int rows, columns;
 
-    public GetPopulationTask(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n, MapCorners grid) {
+    public GetPopulationTask(CensusGroup[] censusGroups, int lo, int hi, int w, int s, int e, int n, MapCorners grid, int rows, int columns) {
         this.censusGroups = censusGroups;
         this.lo = lo;
         this.hi = hi;
@@ -28,30 +29,49 @@ public class GetPopulationTask extends RecursiveTask<Integer> {
         this.e = e;
         this.n = n;
         this.grid = grid;
+        this.rows = rows;
+        this.columns = columns;
     }
 
     // Returns a number for the total population
     @Override
     protected Integer compute() {
         if ( hi - lo < SEQUENTIAL_CUTOFF){
-            return sequentialGetPopulation(censusGroups, lo, hi, w,s,e,n);
+            return sequentialGetPopulation();
         }
-        int mid = lo + (hi - lo) / 2;
-        GetPopulationTask left = new GetPopulationTask(censusGroups, lo, mid, w,s, e, n,grid);
-        GetPopulationTask right = new GetPopulationTask(censusGroups, mid, hi, w,s,e,n,grid);
+        int mid = (hi - lo) / 2 + lo;
+        GetPopulationTask left = new GetPopulationTask(censusGroups, lo, mid, w,s, e, n,grid, rows, columns);
+        GetPopulationTask right = new GetPopulationTask(censusGroups, mid, hi, w,s,e,n,grid, rows, columns);
         left.fork();
         return right.compute() + left.join();
     }
 
     private Integer sequentialGetPopulation(CensusGroup[] censusGroups, int lo, int hi, double w, double s, double e, double n) {
         int pop = 0;
-        for(int i = 0; i < hi; i++){
-            grid = new MapCorners(censusGroups[i]);
-            if (grid.north <= n && grid.south >= s && grid.east <= e && grid.west >= w){
+        for(int i = lo; i < hi; i++){
+            int row = getRow(censusGroups[i]);
+            int col = getColumn(censusGroups[i]);
+            if (col >= w && col <= e && row >= s && row <= n){
                 pop += censusGroups[i].population;
             }
         }
         return pop;
     }
+
+    private int getRow(CensusGroup group){
+        int row = (int) (rows * ((group.latitude - grid.south)/ (grid.north - grid.south))) + 1;
+        if (row > rows)
+            row = rows;
+        return row;
+    }
+
+    private int getColumn(CensusGroup group){
+        int col = (int) (columns * ((group.longitude - grid.west)/ (grid.east - grid.west))) + 1;
+        if (col > columns)
+            col = columns;
+        return col;
+    }
 }
+
+
 
