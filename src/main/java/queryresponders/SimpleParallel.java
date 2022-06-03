@@ -30,3 +30,5 @@ public class SimpleParallel extends QueryResponder {
         return POOL.invoke(new GetPopulationTask(censusData, 0, censusData.length, west, south, east, north, corners,numRows, numColumns));
     }
 }
+
+

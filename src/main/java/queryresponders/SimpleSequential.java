@@ -48,3 +48,5 @@ public class SimpleSequential extends QueryResponder {
         return col;
     }
 }
+
+
