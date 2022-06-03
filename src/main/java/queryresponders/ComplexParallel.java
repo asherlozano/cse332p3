@@ -12,23 +12,15 @@ import java.util.concurrent.ForkJoinPool;
 
 public class ComplexParallel extends QueryResponder {
     private static final ForkJoinPool POOL = new ForkJoinPool();
-    private CensusGroup[] censusData;
-    private int numColumns, numRows;
-    CornerFindingResult res;
-    MapCorners corners;
     private int[][] grid;
 
     public ComplexParallel(CensusGroup[] censusData, int numColumns, int numRows) {
-        this.censusData = censusData;
-        this.numColumns = numColumns;
-        this.numRows = numRows;
-        res = POOL.invoke(new CornerFindingTask(censusData, 0, censusData.length));
+        CornerFindingResult res = POOL.invoke(new CornerFindingTask(censusData, 0, censusData.length));
         this.totalPopulation = res.getTotalPopulation();
-        this.corners = res.getMapCorners();
-        this.grid = POOL.invoke(new PopulateGridTask(censusData,0,censusData.length,numRows,numColumns,corners));
-        for (int i = 1; i <= numRows; i++) {
-            for (int j = 1; j <= numColumns; j++) {
-                grid[i][j] = (grid[i][j] + grid[i][j - 1] + grid[i - 1][j]) - grid[i - 1][j - 1];
+        grid = POOL.invoke(new PopulateGridTask(censusData,0,censusData.length,numRows,numColumns, res.getMapCorners()));
+        for (int i = 1; i <= numColumns; i++) {
+            for (int j = 1; j <= numRows; j++) {
+                grid[i][j] = grid[i][j] + grid[i][j - 1] + grid[i - 1][j] - grid[i - 1][j - 1];
             }
         }
     }
